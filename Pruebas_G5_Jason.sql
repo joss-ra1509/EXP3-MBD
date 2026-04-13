@@ -1,3 +1,8 @@
+-- =============================================
+-- BLOQUE 4: PRUEBAS DE FUNCIONAMIENTO
+-- Descripción: Inserción de datos de prueba y consultas para verificar la integridad del modelo.
+-- =============================================
+
 -- PRUEBA 1 Ver Clientes actuales
 
 USE SistemaVentas_G5;
