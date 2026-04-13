@@ -19,6 +19,7 @@ Entorno: Universidad Don Bosco (UDB Virtual)
 
 Como ejecutarlo
 Para que la base de datos se cree correctamente, se recomienda ejecutar los scripts en el siguiente orden:
+
 ddl.sql
 
 validacion.sql
