@@ -1,3 +1,8 @@
+-- =============================================
+-- BLOQUE 1: DEFINICIÓN DE ESTRUCTURA (DDL)
+-- Descripción: Creación de tablas, llaves primarias y relaciones del modelo.
+-- =============================================
+
 -- PROYECTO: Sistema de Ventas G5
 -- BLOQUE A: Estructura DDL (Cimiento del Sistema)
 -- Responsable: Jossie
