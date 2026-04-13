@@ -1,4 +1,9 @@
 -- =============================================
+-- BLOQUE 2: REGLAS DE INTEGRIDAD Y VALIDACIÓN
+-- Descripción: Implementación de restricciones (CHECK, UNIQUE) para asegurar la calidad de los datos.
+-- =============================================
+
+-- =============================================
 -- BLOQUE B: VALIDACIONES Y ALTAS (ADMINISTRACIÓN)
 -- =============================================
 
