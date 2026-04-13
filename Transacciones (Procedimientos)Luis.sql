@@ -1,3 +1,8 @@
+-- =============================================
+-- BLOQUE 3: TRAZABILIDAD Y AUDITORÍA
+-- Descripción: Scripts para el seguimiento de movimientos y registro de cambios en la base de datos.
+-- =============================================
+
 -- PROYECTO: Sistema de Ventas G5
 -- BLOQUE C: Transacciones (Procedimientos)
 -- Responsable: Luis
