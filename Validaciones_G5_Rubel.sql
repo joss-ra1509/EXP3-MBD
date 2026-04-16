@@ -1,28 +1,39 @@
--- =============================================
--- BLOQUE 2: REGLAS DE INTEGRIDAD Y VALIDACIÓN
--- Descripción: Implementación de restricciones (CHECK, UNIQUE) para asegurar la calidad de los datos.
--- =============================================
+USE SistemaVentas_G5;
+GO
 
--- =============================================
--- BLOQUE B: VALIDACIONES Y ALTAS (ADMINISTRACIÓN)
--- =============================================
-
-DELIMITER //
-
-CREATE FUNCTION fn_ValidarDUI(p_DUI VARCHAR(10)) RETURNS BOOLEAN DETERMINISTIC
+-- Funcion para ver si el DUI esta bien escrito
+CREATE FUNCTION fn_ValidarDUI (@p_DUI VARCHAR(10)) 
+RETURNS BIT
+AS
 BEGIN
-    RETURN p_DUI REGEXP '^[0-9]{8}-[0-9]$';
-END //
-
-CREATE PROCEDURE sp_InsertarCliente(
-    IN p_Nombre VARCHAR(150), IN p_DUI VARCHAR(10), IN p_Email VARCHAR(100)
-)
-BEGIN
-    IF p_DUI IS NOT NULL AND p_DUI <> '' AND fn_ValidarDUI(p_DUI) = 0 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: DUI incorrecto.';
+    DECLARE @esValido BIT;
+    -- Formato de 8 numeros, guion y un numero final
+    IF @p_DUI LIKE '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9]'
+        SET @esValido = 1;
     ELSE
-        INSERT INTO Clientes (Nombre_Completo, DUI, Email) VALUES (p_Nombre, p_DUI, p_Email);
-    END IF;
-END //
+        SET @esValido = 0;
+    RETURN @esValido;
+END;
+GO
 
-DELIMITER ;
+-- El procedimiento para meter clientes validando el DUI
+CREATE PROCEDURE sp_InsertarCliente
+    @p_Nombre VARCHAR(150), 
+    @p_DUI VARCHAR(10), 
+    @p_Email VARCHAR(100)
+AS
+BEGIN
+    -- Primero revisamos el DUI antes de insertar
+    IF @p_DUI IS NOT NULL AND @p_DUI <> '' AND dbo.fn_ValidarDUI(@p_DUI) = 0
+    BEGIN
+        RAISERROR('Error: DUI incorrecto.', 16, 1);
+        RETURN;
+    END
+    ELSE
+    BEGIN
+        -- Si esta bien, se guarda. El DUI es nuestro identificador principal
+        INSERT INTO Clientes (Nombre_Completo, DUI, Email) 
+        VALUES (@p_Nombre, @p_DUI, @p_Email);
+    END
+END;
+GO

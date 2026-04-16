@@ -1,60 +1,65 @@
--- =============================================
--- BLOQUE 1: DEFINICIÓN DE ESTRUCTURA (DDL)
--- Descripción: Creación de tablas, llaves primarias y relaciones del modelo.
--- =============================================
+USE master;
+GO
 
--- PROYECTO: Sistema de Ventas G5
--- BLOQUE A: Estructura DDL (Cimiento del Sistema)
--- Responsable: Jossie
+-- Por si me da error porque ya existe, la borro primero
+IF EXISTS (SELECT name FROM sys.databases WHERE name = 'SistemaVentas_G5')
+BEGIN
+    ALTER DATABASE SistemaVentas_G5 SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE SistemaVentas_G5;
+END
+GO
 
-DROP DATABASE IF EXISTS SistemaVentas_G5;
 CREATE DATABASE SistemaVentas_G5;
+GO
+
 USE SistemaVentas_G5;
+GO
 
--- Tabla de Clientes: Incluye campos de la Exp 2 para Marketing y Crédito
+-- Tabla de clientes (DUI como PK segun asesoria)
 CREATE TABLE Clientes (
-    Id_Cliente INT PRIMARY KEY AUTO_INCREMENT,
+    DUI VARCHAR(10) PRIMARY KEY, 
     Nombre_Completo VARCHAR(150) NOT NULL,
-    DUI VARCHAR(10) UNIQUE NULL, 
     Email VARCHAR(100) UNIQUE,
-    Email_Marketing BOOLEAN DEFAULT TRUE, 
-    Limite_Credito DECIMAL(10,2) DEFAULT 0 CHECK (Limite_Credito >= 0),
-    ID_Estado INT DEFAULT 1 CHECK (ID_Estado IN (0, 1))
+    Email_Marketing BIT DEFAULT 1,
+    Limite_Credito DECIMAL(10,2) DEFAULT 0,
+    ID_Estado INT DEFAULT 1,
+    -- No olvidar el guion
+    CONSTRAINT chk_DUI_Formato CHECK (DUI LIKE '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9]'),
+    CONSTRAINT chk_Estado_Cliente CHECK (ID_Estado IN (0, 1))
 );
 
--- Tabla de Productos: Con control de costos y margen de ganancia
+-- Inventario de productos
 CREATE TABLE Productos (
-    ID_Producto INT PRIMARY KEY AUTO_INCREMENT,
+    ID_Producto INT PRIMARY KEY IDENTITY(1,1),
     Nombre_Producto VARCHAR(100) NOT NULL,
-    Precio_Costo DECIMAL(10,2) NOT NULL CHECK (Precio_Costo >= 0),
+    Precio_Costo DECIMAL(10,2) NOT NULL,
     Margen_Ganancia DECIMAL(5,2) NOT NULL, 
-    Precio_Venta DECIMAL(10,2) NOT NULL CHECK (Precio_Venta > 0), 
-    Stock_Actual INT NOT NULL DEFAULT 0 CHECK (Stock_Actual >= 0),
-    ID_Estado INT DEFAULT 1 CHECK (ID_Estado IN (0, 1))
+    Precio_Venta DECIMAL(10,2) NOT NULL, 
+    Stock_Actual INT NOT NULL DEFAULT 0,
+    ID_Estado INT DEFAULT 1,
+    CONSTRAINT chk_Estado_Producto CHECK (ID_Estado IN (0, 1))
 );
 
--- 3. TABLA PEDIDOS (Maestro)
+-- Los pedidos
 CREATE TABLE Pedidos (
-    ID_Pedido INT PRIMARY KEY AUTO_INCREMENT,
-    ID_Cliente INT NOT NULL,
-    Fecha_Pedido DATETIME DEFAULT CURRENT_TIMESTAMP,
-    Total_Venta DECIMAL(10,2) DEFAULT 0 CHECK (Total_Venta >= 0),
-    ID_Estado INT DEFAULT 1 CHECK (ID_Estado IN (0, 1)), -- 1: Vigente, 0: Anulado
-    CONSTRAINT fk_cliente_pedido FOREIGN KEY (ID_Cliente) 
-        REFERENCES Clientes(ID_Cliente)
+    ID_Pedido INT PRIMARY KEY IDENTITY(1,1),
+    DUI_Cliente VARCHAR(10) NOT NULL, 
+    Fecha_Pedido DATETIME DEFAULT GETDATE(),
+    Total_Venta DECIMAL(10,2) DEFAULT 0,
+    ID_Estado INT DEFAULT 1,
+    CONSTRAINT fk_cliente_pedido FOREIGN KEY (DUI_Cliente) REFERENCES Clientes(DUI)
 );
 
--- 4. TABLA DETALLE_PEDIDO (Detalle)
+-- Lo que lleva cada pedido
 CREATE TABLE Detalle_Pedido (
-    ID_Detalle INT PRIMARY KEY AUTO_INCREMENT,
+    ID_Detalle INT PRIMARY KEY IDENTITY(1,1),
     ID_Pedido INT NOT NULL,
     ID_Producto INT NOT NULL,
     Cantidad INT NOT NULL CHECK (Cantidad > 0),
     Precio_Unitario_Historico DECIMAL(10,2) NOT NULL, 
     Subtotal DECIMAL(10,2) NOT NULL, 
-    ID_Estado INT DEFAULT 1 CHECK (ID_Estado IN (0, 1)), -- Para anular líneas específicas
-    CONSTRAINT fk_maestro_pedido FOREIGN KEY (ID_Pedido) 
-        REFERENCES Pedidos(ID_Pedido),
-    CONSTRAINT fk_producto_detalle FOREIGN KEY (ID_Producto) 
-        REFERENCES Productos(ID_Producto)
+    ID_Estado INT DEFAULT 1,
+    CONSTRAINT fk_maestro_pedido FOREIGN KEY (ID_Pedido) REFERENCES Pedidos(ID_Pedido),
+    CONSTRAINT fk_producto_detalle FOREIGN KEY (ID_Producto) REFERENCES Productos(ID_Producto)
 );
+GO
